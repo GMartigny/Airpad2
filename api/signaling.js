@@ -1,3 +1,5 @@
+import { kv } from '@vercel/kv'
+
 /**
  * @return {string}
  */
@@ -5,27 +7,27 @@ function getId () {
     return Math.random().toString(36).slice(2);
 }
 
-const mapping = {};
-
-export default (request, response) => {
+export default async (request, response) => {
     const { id, desc } = request.query;
 
     if (id) {
-        const source = mapping[id];
+        const source = await kv.get(id);
         if (source) {
             return response.status(200).json({
                 desc: source,
             });
         }
 
-        return response.status(404);
+        return response.status(404).json({
+            message: `Could not find id [${id}]`,
+        });
     }
 
     if (desc) {
         const pick = getId();
-        mapping[pick] = desc;
+        await kv.set(pick, desc);
         return response.status(200).json({
-            id: getId(),
+            id: pick,
         });
     }
 
