@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Airpad2 demo game</title>
+</head>
+<body>
+<script type="module">
+import { createDisplay } from "../dist/airpad.js";
+import { canvas, start, setKey } from "./game.js";
+
+const display = createDisplay();
+display.on("connect", () => {
+    document.body.appendChild(canvas);
+    start();
+});
+
+display.on("message", ({ key, isPressed }) => {
+    setKey(key, isPressed);
+});
+
+const description = await display.createConnection();
+
+const url = new URL(`remote/#${description}`, location.href).toString();
+const link = document.createElement("a");
+link.href = url;
+const qrcode = new Image();
+qrcode.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}`;
+link.appendChild(qrcode);
+document.body.appendChild(link);
+</script>
+</body>
+</html>

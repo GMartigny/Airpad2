@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Airpad2 demo controller</title>
+</head>
+<body>
+<script type="module">
+import { controller } from "../../dist/airpad.js";
+
+function alert (message) {
+    const element = document.createElement("div");
+    element.textContent = message;
+    document.body.appendChild(element);
+}
+
+if (location.hash) {
+    try {
+        const { html, style } = await controller(location.hash.slice(1), controller.remotes.nes);
+        document.head.appendChild(style);
+        document.body.appendChild(html);
+    }
+    catch (error) {
+        console.error(error);
+        alert("Could not find this session");
+    }
+}
+else {
+    alert("Please scan the provided QR-Code");
+}
+</script>
+</body>
+</html>

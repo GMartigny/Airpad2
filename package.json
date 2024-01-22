@@ -1,0 +1,42 @@
+{
+  "name": "airpad2",
+  "version": "0.0.0",
+  "description": "Play game using your phone",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "rollup -c --watch",
+    "build": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GMartigny/airpad2.git"
+  },
+  "keywords": [
+    "game",
+    "controller"
+  ],
+  "author": "GMartigny",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/GMartigny/airpad2/issues"
+  },
+  "homepage": "https://github.com/GMartigny/airpad2#readme",
+  "dependencies": {
+    "@gmartigny/whiskers.js": "^1.1.0"
+  },
+  "devDependencies": {
+    "@gmartigny/eslint-config": "^2.2.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "eslint": "^8.56.0",
+    "rollup": "^4.9.5",
+    "vercel": "^33.2.0"
+  },
+  "eslintConfig": {
+    "extends": [
+      "@gmartigny/eslint-config"
+    ]
+  }
+}
