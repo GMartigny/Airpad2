@@ -1,6 +1,6 @@
 {
   "name": "airpad2",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Play game using your phone",
   "source": "src/index.js",
   "main": "dist/airpad2.js",
