@@ -16,7 +16,7 @@
     "dev": "run-p js api",
     "js": "parcel watch",
     "api": "vercel dev",
-    "build": "vercel build",
+    "build": "parcel build",
     "prepublishOnly": "npm run build"
   },
   "repository": {
