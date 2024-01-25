@@ -1,21 +1,17 @@
 import { render, renderStyle } from "@gmartigny/whiskers.js";
+import { retrieve, answer } from "./signaling.js";
 
-/**
- * @param {string} name -
- * @return {HTMLElement}
- */
-function makeButton (name) {
-    // eslint-disable-next-line no-use-before-define
-    const trigger = detail => () => button.dispatchEvent(new CustomEvent(name, {
-        detail,
-    }));
-    const button = render("button", {
-        class: name,
-        "@mousedown": trigger("down"),
-        "@mouseup": trigger("up"),
-    });
-    return button;
-}
+const makeButton = trigger => name => render("button", {
+    class: name,
+    "@mousedown": () => trigger({
+        name,
+        state: "down",
+    }),
+    "@mouseup": () => trigger({
+        name,
+        state: "up",
+    }),
+});
 
 const remotes = {
     nes: "NES",
@@ -90,6 +86,32 @@ styles.default = styles[remotes.nes];
  * @return {{html: HTMLElement, style: HTMLStyleElement}}
  */
 async function controller (id, name = remotes.nes) {
+    const connection = new RTCPeerConnection();
+    connection.addEventListener("connectionstatechange", () => {
+        console.log(connection.connectionState);
+    });
+
+    const remoteDescription = await retrieve(id);
+    await connection.setRemoteDescription(remoteDescription);
+
+    const localDescription = await connection.createAnswer();
+    await connection.setLocalDescription(localDescription);
+
+    const [trigger] = await Promise.all([
+        new Promise((resolve) => {
+            connection.addEventListener("datachannel", ({ channel }) => {
+                channel.addEventListener("message", ({ data }) => {
+                    const json = JSON.parse(data);
+                    console.log("Message: ", json);
+                });
+                resolve((data) => {
+                    channel.send(JSON.stringify(data));
+                });
+            });
+        }),
+        answer(id, connection.localDescription),
+    ]);
+
     const html = render(undefined, {
         class: `controller ${name}`,
     }, [
@@ -100,10 +122,10 @@ async function controller (id, name = remotes.nes) {
             "Right",
             "Down",
             "Left",
-        ].map(makeButton)),
+        ].map(makeButton(trigger))),
         render(undefined, {
             class: "buttons",
-        }, buttons[name].map(makeButton)),
+        }, buttons[name].map(makeButton(trigger))),
     ]);
 
     const stretch = {
@@ -159,19 +181,6 @@ async function controller (id, name = remotes.nes) {
 
             ...styles[name],
         },
-    });
-
-    const connection = new RTCPeerConnection();
-    await connection.setRemoteDescription(new RTCSessionDescription(JSON.parse(atob(id))));
-    const answer = await connection.createAnswer();
-    await connection.setLocalDescription(answer);
-    connection.addEventListener("datachannel", ({ channel }) => {
-        channel.addEventListener("open", () => {
-            console.log("Open channel");
-        });
-        channel.addEventListener("message", ({ data }) => {
-            console.log("Message: ", data);
-        });
     });
 
     return {

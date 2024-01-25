@@ -6,28 +6,30 @@
 </head>
 <body>
 <script type="module">
-import { createDisplay } from "../dist/airpad.js";
+import { createDisplay } from "../dist/airpad2.js";
 import { canvas, start, setKey } from "./game.js";
 
 const display = createDisplay();
 display.on("connect", () => {
+    document.body.innerHTML = "";
     document.body.appendChild(canvas);
     start();
 });
 
-display.on("message", ({ key, isPressed }) => {
-    setKey(key, isPressed);
+display.on("button", ({ name, state }) => {
+    setKey(name, state === "down");
 });
 
-const description = await display.createConnection();
-
-const url = new URL(`remote/#${description}`, location.href).toString();
-const link = document.createElement("a");
-link.href = url;
-const qrcode = new Image();
-qrcode.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}`;
-link.appendChild(qrcode);
-document.body.appendChild(link);
+display.on("hasID", ({ id }) => {
+    const url = new URL(`remote/#${id}`, location.href).toString();
+    const link = document.createElement("a");
+    link.href = url;
+    const qrcode = new Image();
+    qrcode.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}`;
+    link.appendChild(qrcode);
+    document.body.appendChild(link);
+});
+display.createConnection();
 </script>
 </body>
 </html>

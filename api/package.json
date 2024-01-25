@@ -1,0 +1,12 @@
+{
+  "description": "Signaling server for Airpad2",
+  "main": "signaling.js",
+  "type": "module",
+  "author": "GMartigny",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/kv": "^1.0.1",
+    "allow-cors": "^2.0.0",
+    "pusher": "^5.2.0"
+  }
+}

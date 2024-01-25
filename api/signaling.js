@@ -1,4 +1,6 @@
-import { kv } from '@vercel/kv'
+import Pusher from "pusher";
+import { kv } from "@vercel/kv";
+import allow from "allow-cors";
 
 /**
  * @return {string}
@@ -8,9 +10,43 @@ function getId () {
 }
 
 export default async (request, response) => {
-    const { id, desc } = request.query;
+    const { id, desc, ans } = request.query;
+
+    allow(response);
+
+    if (desc) {
+        const pick = getId();
+        await kv.set(pick, desc);
+        return response.status(200).json({
+            id: pick,
+        });
+    }
+
+    if (ans) {
+        const {
+            PUSHER_APP_ID: appId,
+            PUSHER_KEY: key,
+            PUSHER_SECRET: secret,
+        } = process.env;
+
+        const pusher = new Pusher({
+            appId,
+            key,
+            secret,
+            cluster: "eu",
+            useTLS: true,
+        });
+        await pusher.trigger(id, "connect", {
+            ans,
+        });
+
+        return response.status(200).send();
+    }
 
     if (id) {
+        /**
+         * @type string
+         */
         const source = await kv.get(id);
         if (source) {
             return response.status(200).json({
@@ -20,14 +56,6 @@ export default async (request, response) => {
 
         return response.status(404).json({
             message: `Could not find id [${id}]`,
-        });
-    }
-
-    if (desc) {
-        const pick = getId();
-        await kv.set(pick, desc);
-        return response.status(200).json({
-            id: pick,
         });
     }
 

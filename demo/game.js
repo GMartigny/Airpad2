@@ -1,13 +1,15 @@
 const canvas = document.createElement("canvas");
 canvas.width = 800;
 canvas.height = 600;
+canvas.style.display = "block";
+canvas.style.backgroundColor = "#020915";
 
 const ctx = canvas.getContext("2d");
 
 const keys = {};
 
 const character = {
-    speed: 1,
+    speed: 2,
     sprite: new Image(),
     x: 0,
     y: 0,

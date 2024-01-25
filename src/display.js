@@ -1,15 +1,25 @@
+import { signal } from "./signaling.js";
+
+/**
+ * @typedef {Object} ConnectionOptions
+ * @property {string} [stunServer="stun:stun.framasoft.org:3478"]
+ * @property {Function<string>} [signalingServer]
+ */
+
+const defaultOptions = {
+    stunServer: "stun:stun.framasoft.org:3478",
+};
+
 /**
  * @typedef {Object} DisplayAPI
- * @property {string} id
  * @method on
  * @method fire
  * @method createConnection
  */
 /**
- * @param {string} stunServer -
  * @return {DisplayAPI}
  */
-function display (stunServer = "stun:stun.framasoft.org:3478") {
+function display () {
     const listeners = {};
     return {
         /**
@@ -32,38 +42,58 @@ function display (stunServer = "stun:stun.framasoft.org:3478") {
             });
         },
         /**
-         * @return {Promise}
+         * @param {ConnectionOptions} options -
          */
-        async createConnection () {
+        async createConnection (options) {
+            const merged = {
+                ...defaultOptions,
+                ...options,
+            };
             const connection = new RTCPeerConnection({
                 iceServers: [
                     {
-                        url: stunServer,
+                        url: merged.stunServer,
                     },
                 ],
             });
-            const promise = new Promise((resolve) => {
+            connection.addEventListener("connectionstatechange", () => {
+                console.log(connection.connectionState);
+            });
+
+            new Promise((resolve) => {
                 connection.addEventListener("icecandidate", ({ candidate }) => {
                     if (!candidate) {
-                        console.log("Candidate negotiation ends");
-                        resolve(btoa(JSON.stringify(connection.localDescription)));
+                        resolve();
                     }
                 });
-            });
+            })
+                .then(() => signal(connection.localDescription, (remoteDescription) => {
+                    connection.setRemoteDescription(remoteDescription);
+                    this.fire("connect", {
+                        type: "connect",
+                    });
+                }))
+                .then((id) => {
+                    this.fire("hasID", {
+                        id,
+                    });
+                });
+
             const channel = connection.createDataChannel("buttons");
             channel.addEventListener("open", () => {
-                console.log("Connect");
-                this.fire("connect");
+                channel.addEventListener("message", ({ data }) => {
+                    const json = JSON.parse(data);
+                    console.log("Message", json);
+                    this.fire("button", json);
+                });
+                this.fire("open");
+                channel.send(JSON.stringify({
+                    message: "Hi",
+                }));
             });
-            // channel.addEventListener("message", ({ data }) => {
-            //     console.log("Message: ", data);
-            // });
-            // channel.addEventListener("close", () => {
-            //     this.fire("disconnect");
-            // });
+
             const offer = await connection.createOffer();
             await connection.setLocalDescription(offer);
-            return promise;
         },
     };
 }

@@ -2,12 +2,21 @@
   "name": "airpad2",
   "version": "0.0.0",
   "description": "Play game using your phone",
-  "main": "src/index.js",
+  "source": "src/index.js",
+  "main": "dist/airpad2.js",
   "type": "module",
+  "targets": {
+    "main": {
+      "optimize": true,
+      "includeNodeModules": true
+    }
+  },
   "scripts": {
-    "dev": "rollup -c --watch",
-    "build": "rollup -c",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint src",
+    "dev": "run-p js api",
+    "js": "parcel watch",
+    "api": "vercel dev",
+    "prepublishOnly": "parcel build"
   },
   "repository": {
     "type": "git",
@@ -24,14 +33,14 @@
   },
   "homepage": "https://github.com/GMartigny/airpad2#readme",
   "dependencies": {
-    "@gmartigny/whiskers.js": "^1.1.0"
+    "@gmartigny/whiskers.js": "^1.1.0",
+    "pusher-js": "^8.4.0-rc2"
   },
   "devDependencies": {
     "@gmartigny/eslint-config": "^2.2.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
     "eslint": "^8.56.0",
-    "rollup": "^4.9.5",
+    "npm-run-all": "^4.1.5",
+    "parcel": "^2.11.0",
     "vercel": "^33.2.0"
   },
   "eslintConfig": {
