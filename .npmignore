@@ -1,4 +1,8 @@
 .idea/
+.parcel-cache/
 .vercel/
 api/
 demo/
+
+.vercelignore
+archi.png
